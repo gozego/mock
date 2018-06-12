@@ -10,10 +10,24 @@ defmodule MockTest do
     {:ok, foo: foo}
   end
 
+  defp test_fun do
+    "string"
+    |> String.reverse()
+    |> String.reverse()
+  end
+
   test "simple mock" do
     with_mock String,
         [reverse: fn(x) -> 2*x end] do
       assert String.reverse(3) == 6
+    end
+  end
+
+  test "mock num_calls" do
+    with_mock String,
+        [reverse: fn(x) -> x end] do
+      test_fun()
+      assert called 2, String.reverse("string")
     end
   end
 

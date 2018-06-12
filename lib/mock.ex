@@ -120,16 +120,31 @@ defmodule Mock do
   end
 
   @doc """
-    Use inside a `with_mock` block to determine whether
-    a mocked function was called as expected.
+  Use inside a `with_mock` block to determine whether
+  a mocked function was called as expected.
 
-    ## Example
+  ## Example
 
-        assert called HTTPotion.get("http://example.com")
+      assert called HTTPotion.get("http://example.com")
     """
-  defmacro called({ {:., _, [ module , f ]} , _, args }) do
+  defmacro called({ {:., _, [ module, f ]} , _, args }) do
     quote do
       :meck.called unquote(module), unquote(f), unquote(args)
+    end
+  end
+
+  @doc """
+  Use inside a `with_mock` block to determine whether
+  a mocked function was called as expected and
+  given number of times.
+
+  ## Example
+
+      assert called 2, HTTPotion.get("http://example.com")
+  """
+  defmacro called(count, {{:., _, [module, f]}, _, args}) do
+    quote bind_quoted: [module: module, f: f, args: args, count: count] do
+      count === :meck.num_calls module, f, args
     end
   end
 
