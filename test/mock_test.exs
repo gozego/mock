@@ -84,6 +84,19 @@ defmodule MockTest do
       length: fn(_x) -> :ok end] do
       String.reverse(3)
       assert_called(String.reverse(3))
+      assert_called 1, String.reverse(3)
+
+      try do
+        "This should never be tested" = assert_called 1, String.reverse(6)
+      rescue
+        error in [ExUnit.AssertionError] ->
+          """
+          Expected 1 call(s) for Elixir.String.reverse(6). Got 0 calls
+          Calls which were received:
+          
+          0. Elixir.String.reverse(3) (returned 6)\
+          """ = error.message
+      end
 
       try do
             "This should never be tested" = assert_called(String.reverse(2))

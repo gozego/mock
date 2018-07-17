@@ -149,10 +149,9 @@ defmodule Mock do
   end
 
   defmacro assert_called(count, {{:., _, [module, f]}, _, args}) do
-    quote do
-      unquoted_module = unquote(module)
+    quote bind_quoted: [count: count, module: module, f: f, args: args] do
       unless count === :meck.num_calls module, f, args do
-        raise_called unquoted_module
+        raise_called {module, f, args}, count
       end
     end
   end
@@ -176,17 +175,53 @@ defmodule Mock do
     end
   end
 
-  def raise_called(module) do
-    calls = module 
-            |> :meck.history()
-            |> Enum.with_index()
-            |> Enum.map(fn {{_, {m, f, a}, ret}, i} ->
-              "#{i}. #{m}.#{f}(#{a |> Enum.map(&Kernel.inspect/1) |> Enum.join(",")}) (returned #{inspect ret})"
-            end)
-            |> Enum.join("\n")
+  def raise_called({m, f, a}, count) do
+    mock_calls = get_module_mock_history(m)
+
+    matching_calls =
+      mock_calls
+      |> Enum.filter(fn
+        {{_, {^m, ^f, ^a}, _ret}, _i} -> true
+        _other -> false
+      end)
+
+    mock_calls =
+      mock_calls
+      |> pretty_print_calls()
+      |> Enum.join("\n")
 
     raise ExUnit.AssertionError,
-      message: "Expected call but did not receive it. Calls which were received:\n\n#{calls}"
+      message: "Expected #{count} call(s) for #{pretty_print_mfa(m, f, a)}. Got #{Enum.count(matching_calls)} calls\nCalls which were received:\n\n#{mock_calls}"
+  end
+
+  def raise_called(module) do
+    module
+    |> get_module_mock_history()
+    |> pretty_print_calls()
+    |> case do
+      [] ->
+        raise ExUnit.AssertionError,
+          message: "Did not receive any call for #{module}"
+      calls ->
+        raise ExUnit.AssertionError,
+          message: "Expected call but did not receive it. Calls which were received:\n\n#{Enum.join(calls, "\n")}"
+    end
+  end
+
+  defp get_module_mock_history(module) do
+    module 
+    |> :meck.history()
+    |> Enum.with_index()
+  end
+
+  defp pretty_print_calls(calls) do
+    Enum.map(calls, fn {{_, {m, f, a}, ret}, i} ->
+      "#{i}. #{pretty_print_mfa(m, f, a)} (returned #{inspect ret})"
+    end)
+  end
+
+  defp pretty_print_mfa(m, f, a) do
+    "#{m}.#{f}(#{a |> Enum.map(&Kernel.inspect/1) |> Enum.join(",")})"
   end
 
   @doc """
