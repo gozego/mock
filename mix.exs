@@ -21,7 +21,7 @@ defmodule Mock.Mixfile do
       {:meck, "~> 0.8"},
       {:docs_ghpages, github: "jjh42/docs_ghpages", only: :dev},
       {:markdown, github: "devinus/markdown", only: :dev},
-      {:excoveralls, "~> 0.7.2", only: :test}
+      {:excoveralls, "~> 0.9.1", only: :test}
     ]
   end
 

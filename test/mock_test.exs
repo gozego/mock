@@ -80,8 +80,17 @@ defmodule MockTest do
 
   test "assert_called" do
     with_mock String,
-      [reverse: fn(x) -> 2*x end,
-      length: fn(_x) -> :ok end] do
+      [
+        reverse: fn(x) -> 2*x end,
+        length: fn(_x) -> :ok end,
+        trim: fn x -> x end
+      ] do
+      try do
+        "This should never be tested" = assert_called String.trim(:_)
+      rescue
+        error in [ExUnit.AssertionError] -> "Did not receive any call for Elixir.String" = error.message
+      end
+
       String.reverse(3)
       assert_called(String.reverse(3))
       assert_called 1, String.reverse(3)
