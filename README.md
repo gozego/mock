@@ -49,6 +49,7 @@ You can also assert for number of counts for a call to happen
 
 ```elixir
 assert called 1, HTTPotion.get("http://example.com")
+assert_called 1, HTTPotion.get("http://example.com")
 ```
 
 And you can mock up multiple modules with `with_mocks`.
