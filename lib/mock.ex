@@ -303,7 +303,8 @@ defmodule Mock do
         end
 
         unquote(__MODULE__)._install_mock(m, mock_fns)
-        assert :meck.validate(m) == true
+        # IO.warn "MOCK: being validated -> #{inspect m}\nfunctions mocked ->#{inspect mock_fns}\nMocked so far: #{inspect ms}"
+        # assert :meck.validate(m) == true
 
         [ m | ms] |> Enum.uniq
       end)
