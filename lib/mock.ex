@@ -153,6 +153,7 @@ defmodule Mock do
       unless count === :meck.num_calls module, f, args do
         raise_called {module, f, args}, count
       end
+      true
     end
   end
 
@@ -172,6 +173,7 @@ defmodule Mock do
       unless value do
         raise_called unquoted_module
       end
+      true
     end
   end
 
